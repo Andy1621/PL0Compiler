@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>PL0Compiler</title>
+    <link rel="icon" href="{{ url_for('static',filename='pic/icon.png') }}" sizes="32x32">
+    <link href="{{ url_for('static',filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename='css/my.css') }}" rel="stylesheet">
+
+    <script type="text/javascript" src="{{ url_for('static',filename='js/jquery-3.2.1.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='ace/ace.js') }}"></script>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">PL0Compiler</a>
+
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="lexer">Lexer</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="opg">OPG</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="compiler">Compiler</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link navbar-brand" href="#">Help</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="homework1">Homework1</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="homework2">Homework2</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container">
+    <h3>关于作者</h3>
+    <h4>16211022 黎昆昌</h4>
+    <p>这个编译器是我们软件学院大三上编译原理课程的大作业，花了一个月的时间断断续续写完的，界面审美因人而异啦，
+        也许还有不少的bug，功能也不够完美，如果你有更好的修改意见，欢迎联系812487273@qq.com</p>
+    <p>程序在github上提供源代码，可跳转访问<a href="https://github.com/Andy1621/PL0Compiler">https://github.com/Andy1621/PL0Compiler</a></p>
+    <h3>Lexer 词法分析器</h3>
+    <h4>说明</h4>
+    <p>1. 程序采用多符一类。</p>
+    <p>2. 对于类似<code>1.1.1.1</code>，<code>123a</code>，仅有单边注释<code>/*</code>等，不在此词法分析程序报错，留待语法分析程序报错。</p>
+    <p>3. 程序处理注释格式为<code>/*...*/</code></p>
+    <h4>操作</h4>
+    <p>1. 在Code输入框内输入Pascal代码，可手动输入也可文件导入。</p>
+    <p>2. 点击RUN按钮，右方Result表格内会输出词法分析结果，若显示<code>Ruslt Error</code>说明出现了不规范的单词。</p>
+    <h4>符号说明</h4>
+    <table class="table table-bordered" style="table-layout：fixed; width: 65%">
+        <tbody>
+        <tr class="info">
+            <td>KEYWORD</td>
+            <td>关键字</td>
+        </tr>
+        <tr class="info">
+            <td>IDENTIFIER</td>
+            <td>标识符</td>
+        </tr>
+        <tr class="info">
+            <td>NUMBER</td>
+            <td>数字（二进制显示）</td>
+        </tr>
+        <tr class="info">
+            <td>DELIMITER</td>
+            <td>分界符</td>
+        </tr>
+        <tr class="info">
+            <td>SINGLE_OPERATOR</td>
+            <td>单字符运算符</td>
+        </tr>
+        <tr class="info">
+            <td>DOUBLE_OPERATOR</td>
+            <td>双字符运算符</td>
+        </tr>
+        </tbody>
+    </table>
+    <br>
+    <h3>OPG 算符优先分析器</h3>
+    <h4>说明</h4>
+    <p>1. 文法的第一条规则必须为文法入口。</p>
+    <p>2. 每一条规则输入格式有严格规定，如<code>E->T*F|F</code>，终结符规定为大写字母，且终结符和非终结符都为单字符。
+        不能出现扩展的BNF文法，即<code>{}、[]、()</code>带特殊含义的规则。
+        规则中不能有<code>#</code>，该字符用于辅助移进-归约判断。
+    </p>
+    <p>3. 句子正常输入即可，无格式要求。</p>
+    <h4>操作</h4>
+    <p>1. 在Grammar输入框内输入文法，可手动输入也可文件导入。</p>
+    <p>2. 在Sentence输入框内输入句子。</p>
+    <p>3. 点击RUN按钮，下方Result会显示优先关系矩阵和移进规约的过程，若显示<code>Ruslt Error</code>说明出现错误，
+        可能是因为文法不是算符优先文法，也可能句子错误。
+    </p>
+    <h4>符号说明</h4>
+    <table class="table table-bordered" style="table-layout：fixed; width: 65%">
+        <tbody>
+        <tr class="info">
+            <td>Step</td>
+            <td>当前步数</td>
+        </tr>
+        <tr class="info">
+            <td>Stack</td>
+            <td>当前栈内字符</td>
+        </tr>
+        <tr class="info">
+            <td>Priority</td>
+            <td>优先关系</td>
+        </tr>
+        <tr class="info">
+            <td>Current</td>
+            <td>当前分析符号</td>
+        </tr>
+        <tr class="info">
+            <td>Left</td>
+            <td>剩余分析符号</td>
+        </tr>
+        <tr class="info">
+            <td>Action</td>
+            <td>动作，<code>move in</code>表示移进，<code>reduce</code>表示归约</td>
+        </tr>
+        </tbody>
+    </table>
+    <br>
+    <h3>Compiler 编译器</h3>
+    <h4>说明</h4>
+    <p>1. 程序为针对PL/0语法的编译器，编译前请首先保证输入代码符合PL/0语法。</p>
+    <p>2. 程序报错信息中行列号不一定定位准确，错误的真正位置可能在上一行结尾，
+        同时程序在发生错误时进行跳读处理，中间的很多错误可能不进行检查。</p>
+    <p>3. 程序中出现死循环时，页面无法输出编译结果，应尽量在程序中避免死循环以免降低服务器效率。</p>
+    <h4>操作</h4>
+    <p>1. 在Code输入框内输入Pascal代码，可手动输入也可文件导入</p>
+    <p>2. 点击Compile进行程序编译，若提示编译成功，可进行代码解释，若显示<code>Output Error</code>说明出现错误，
+        应根据报错信息进行代码修正。
+    </p>
+    <p>3. 编译程序无误后，可点击Interpret进行解释，若未输入网页会弹出对话框提示输入，
+        输入完成后重新点金Interpret进行解释。</p>
+    <br>
+</div>
+
+</body>
+</html>

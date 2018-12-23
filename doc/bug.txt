@@ -1,0 +1,17 @@
+S->#E#
+E->M*N
+M->T+T
+M->b
+N->F+F
+N->a
+T->a
+F->b
+
+b+b*a+a
+
+
+E->M*N
+M->T+T|b
+N->F+F|a
+T->a
+F->b

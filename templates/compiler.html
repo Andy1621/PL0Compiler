@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>PL0Compiler</title>
+
+    <link rel="icon" href="{{ url_for('static',filename='pic/icon.png') }}" sizes="32x32">
+    <link href="{{ url_for('static',filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename='css/my.css') }}" rel="stylesheet">
+
+    <script type="text/javascript" src="{{ url_for('static',filename='js/jquery-3.2.1.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='ace/ace.js') }}"></script>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">PL0Compiler</a>
+
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="lexer">Lexer</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="opg">OPG</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link navbar-brand" href="#">Compiler</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="help">Help</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="homework1">Homework1</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="homework2">Homework2</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Code</h3>
+            <pre id="editor" style="height: 500px;"></pre>
+        </div>
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-5">
+            <div>
+                <h3>PCode</h3>
+            </div>
+            <div id="result-place"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <input type="file" id="input_file" onchange="loadFile()">
+        </div>
+        <div class="col-md-1">
+            <button class="btn btn-success" id="Compile">
+                Compile
+            </button>
+        </div>
+        <div class="col-md-1">
+            <button class="btn btn-success" id="Interpret">
+                Interpret
+            </button>
+        </div>
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-1">
+            <div>
+                <h3><abbr title="若程序需要输入请在解释前输入">Input</abbr></h3>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <input class="form-control" id="input">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div id="output-word">
+                <h3>Output</h3>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <textarea class="form-control" rows="5" id="output" style="font-size: 24px"></textarea>
+        </div>
+    </div>
+    <br><br><br>
+
+</div>
+
+<script>
+    ace.require("ace/ext/language_tools");
+    var editor = ace.edit("editor");
+    editor.getSession().setMode("ace/mode/pascal");
+
+    editor.setTheme("ace/theme/tomorrow");
+    editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true,
+        enableLiveAutocompletion: true
+    });
+    editor.setFontSize(18);
+
+    var check = false;
+
+    $('#Compile').click(function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: '/api/v1/compiler',
+            type: 'post',
+            data: {'code': editor.getValue()},
+            success: function (json) {
+                $('#result-place').html('<div class="pre-scrollable" style="max-height: 500px" id="result-show">' +
+                    '<table class="table table-hover table-bordered" style="table-layout:fixed;">' +
+                    '<tbody id="result"></tbody></table></div>');
+                json = JSON.parse(json);
+                var code = json['code'];
+                var s1 = '';
+                $.each(code, function (n, value) {
+                    s1 += '<tr class="info">';
+                    for (var key in value) {
+                        s1 += '<td>' + value[key] + '</td>';
+                    }
+                    s1 += '</tr>';
+                });
+                $('#result').html(s1);
+
+                $('#output-word').html('<h3>Output</h3>');
+
+                var msg = json['msg'];
+                var s2 = '';
+                var state = msg[0].state;
+                if (state === 'fail') {
+                    check = false;
+                    $('#output-word').html('<h3 style="color:red;"><abbr title="' + msg[0].abbr + '">Output Error</abbr></h3>');
+                }
+                else if (state === 'success') {
+                    check = true;
+                }
+                delete msg[0];
+                $.each(msg, function (n, value) {
+                    for (var key in value) {
+                        s2 += value[key] + '\n';
+                    }
+                });
+                $('#output').html(s2);
+            }
+        });
+    });
+
+    $('#Interpret').click(function (e) {
+        if (check === false) {
+            alert('代码未进行编译或出现编译错误');
+        }
+        else {
+            e.preventDefault();
+            $.ajax({
+                url: '/api/v1/interpreter',
+                type: 'post',
+                data: {'code': editor.getValue(), 'in': $('#input').val()},
+                success: function (json) {
+                    $('#result-place').html('<div class="pre-scrollable" style="max-height: 500px" id="result-show">' +
+                        '<table class="table table-hover table-bordered" style="table-layout:fixed;">' +
+                        '<tbody id="result"></tbody></table></div>');
+                    json = JSON.parse(json);
+                    var code = json['code'];
+                    var s1 = '';
+                    $.each(code, function (n, value) {
+                        s1 += '<tr class="info">';
+                        for (var key in value) {
+                            s1 += '<td>' + value[key] + '</td>';
+                        }
+                        s1 += '</tr>';
+                    });
+                    $('#result').html(s1);
+
+                    $('#output-word').html('<h3>Output</h3>');
+
+                    var msg = json['msg'];
+                    var state = msg[0].state;
+                    if (state === 'fail') {
+                        check = false;
+                        alert('修改了代码，请重新编译成功后进行解释');
+                        $('#output-word').html('<h3 style="color:red;"><abbr title="' + '请重新编译' + '">Output Error</abbr></h3>');
+
+                        delete msg[0];
+                        var s2 = '修改了代码，请重新编译成功后进行解释';
+                        $('#output').html(s2);
+                    }
+                    else if (state === 'success') {
+                        check = true;
+                        var output = json['output'];
+                        var state2 = output[0];
+                        if (state2.state === 'fail') {
+                            alert(state2.msg);
+                            $('#output').html(state2.msg);
+                        }
+                        else if (state2.state === 'success') {
+                            var s3 = '';
+                            delete output[0];
+                            $.each(output, function (n, value) {
+                                for (var key in value) {
+                                    s3 += value[key] + '\n';
+                                }
+                            });
+                            $('#output').html(s3);
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    function loadFile() {
+        var file = document.getElementById("input_file").files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.readAsText(file, "UTF-8");
+            reader.onload = function (evt) {
+                editor.setValue(evt.target.result);
+            };
+            reader.onerror = function () {
+                alert("Error when reading file!");
+            }
+        }
+    }
+
+</script>
+</body>
+</html>

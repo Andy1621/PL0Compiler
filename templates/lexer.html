@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>PL0Compiler</title>
+
+    <link rel="icon" href="{{ url_for('static',filename='pic/icon.png') }}" sizes="32x32">
+    <link href="{{ url_for('static',filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename='css/my.css') }}" rel="stylesheet">
+
+    <script type="text/javascript" src="{{ url_for('static',filename='js/jquery-3.2.1.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='ace/ace.js') }}"></script>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">PL0Compiler</a>
+
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link navbar-brand" href="#">Lexer</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="opg">OPG</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="compiler">Compiler</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="help">Help</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="homework1">Homework1</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-brand" href="homework2">Homework2</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Code</h3>
+            <pre id="editor" style="height: 500px;"></pre>
+        </div>
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-5">
+            <div id="result-word">
+                <h3>Result</h3>
+            </div>
+            <div id="result-place"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <input type="file" id="input_file" onchange="loadFile()">
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-success" id="run">
+                Run
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    ace.require("ace/ext/language_tools");
+    var editor = ace.edit("editor");
+    editor.getSession().setMode("ace/mode/pascal");
+
+    editor.setTheme("ace/theme/tomorrow");
+    editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true,
+        enableLiveAutocompletion: true
+    });
+    editor.setFontSize(18);
+
+    $('#run').click(function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: '/api/v1/lexer',
+            type: 'post',
+            data: {'code': editor.getValue()},
+            success: function (json) {
+                $('#result-place').html('<div class="pre-scrollable" style="max-height: 500px" id="result-show">' +
+                    '<table class="table table-hover table-bordered" style="table-layout:fixed;">' +
+                    '<tbody id="result"></tbody></table></div>');
+                json = JSON.parse(json);
+                var s = '';
+                $('#result-word').html('<h3>Result</h3>');
+                $.each(json, function (n, value) {
+                    if (value.state === 'normal') {
+                        s += '<tr class="info"><td style="30%;">' + value.type + '</td><td style="width:70%; word-break: break-all">' +
+                            value.value + '</td></tr>';
+                    }
+                    else {
+                        s += '<tr class="info" style="background-color:#f5c6cb"><td colspan="2">' + value.message + '</td></tr>';
+                        $('#result-word').html('<h3 style="color:red;"><abbr title="' + value.message + '">Result Error</abbr></h3>');
+                        $('#result-show').scrollTop($('#result-show')[0].scrollHeight);
+                    }
+                });
+                $('#result').html(s);
+            }
+        });
+    });
+
+    function loadFile() {
+        var file = document.getElementById("input_file").files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.readAsText(file, "UTF-8");
+            reader.onload = function (evt) {
+                editor.setValue(evt.target.result);
+            };
+            reader.onerror = function () {
+                alert("Error when reading file!");
+            }
+        }
+    }
+
+</script>
+</body>
+</html>
