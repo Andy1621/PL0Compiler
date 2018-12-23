@@ -357,14 +357,16 @@ class Parser:
                     self.error.add(pos=self._error_pos(), error_num=4)
 
             symbol = Symbol(kind='const')
-            _const_deal()
-            while self.curToken.value == ',':
-                self._get_symbol()
+            while self.curToken.type == 'IDENTIFIER':
                 _const_deal()
-            if self.curToken.value == ';':
-                self._get_symbol()
-            else:
-                self.error.add(pos=self._error_pos(), error_num=5)
+                while self.curToken.value == ',':
+                    self._get_symbol()
+                    _const_deal()
+                if self.curToken.value == ';':
+                    self._get_symbol()
+                    break
+                else:
+                    self.error.add(pos=self._error_pos(), error_num=5)
 
         def _var():
             def _var_deal():
@@ -381,14 +383,16 @@ class Parser:
                     self.error.add(pos=self._error_pos(), error_num=4)
 
             symbol = Symbol(kind='var', level=self.curLevel)
-            _var_deal()
-            while self.curToken.value == ',':
-                self._get_symbol()
+            while self.curToken.type == 'IDENTIFIER':
                 _var_deal()
-            if self.curToken.value == ';':
-                self._get_symbol()
-            else:
-                self.error.add(pos=self._error_pos(), error_num=5)
+                while self.curToken.value == ',':
+                    self._get_symbol()
+                    _var_deal()
+                if self.curToken.value == ';':
+                    self._get_symbol()
+                    break
+                else:
+                    self.error.add(pos=self._error_pos(), error_num=5)
 
         def _proc():
             symbol = Symbol(kind='proc', level=self.curLevel)
